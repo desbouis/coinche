@@ -1,0 +1,43 @@
+{{define "player/view"}}
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Player "{{.Name}}"</title>
+<link rel="stylesheet" href="/coinche/assets/css/main.css">
+</head>
+<body>
+
+<h1>Player "{{.Name}}"</h1>
+<form action="/coinche/player/{{.Id}}" onsubmit="javascript:location.reload(true)">
+<table>
+  <tr>
+    <th>Alias:</th><td>{{.Alias}}</td>
+  </tr>
+  <tr>
+    <th>Coinche id:</th><td>{{.GameId}}</td>
+  </tr>
+  <tr>
+    <th>Distributed cards:</th>
+<!--
+    <td>
+      {{range $k, $v := .DistributedCards}}
+        <input type="checkbox" id="{{$k}}" name="{{$k}}"><label for="{{$k}}" class="cards">{{noescape $v}}</label>&nbsp;&nbsp;<br>
+      {{end}}
+    </td>
+-->
+    <td>
+      {{range $k, $v := .DistributedCards}}
+        <img src="/coinche/assets/img/en/{{$v}}.gif">&nbsp;&nbsp;
+      {{end}}
+    </td>
+  </tr>
+</table>
+<p>
+<input type="submit" value="Get new cards...">
+</p>
+</form>
+
+</body>
+</html>
+{{end}}

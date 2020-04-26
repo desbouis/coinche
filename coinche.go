@@ -109,13 +109,12 @@ func loadPlayer(id string) (*Player, error) {
 }
 
 func (g *Game) saveGame() error {
-    filename := "g_" + g.Id + ".json"
-    g.Cards = explicitCards
-    jsonpayload, err := json.MarshalIndent(g, "", "  ")
-    if err != nil {
+//    fmt.Println(g)
+    if _, err := redCon.Do("HMSET", redis.Args{}.Add("g:"+g.Id).AddFlat(g)...); err != nil {
+        fmt.Println(err)
         return err
     }
-    return ioutil.WriteFile(filename, jsonpayload, 0600)
+    return nil
 }
 
 func loadGame(id string) (*Game, error) {
@@ -257,6 +256,7 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
+
     pNord, err := loadPlayer(nordId)
     if err != nil {
         http.Redirect(w, r, "/coinche/", http.StatusFound)

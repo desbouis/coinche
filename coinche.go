@@ -21,7 +21,6 @@ type Player struct {
     Name             string
     Alias            string
     GameId           string
-    Cards            map[string]string
     DistributedCards map[string]string
 }
 
@@ -86,7 +85,6 @@ func generateId() string {
 
 func (p *Player) savePlayer() error {
     filename := "p_" + p.Id + ".json"
-    p.Cards = explicitCards
     jsonpayload, err := json.MarshalIndent(p, "", "  ")
     if err != nil {
         return err

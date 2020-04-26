@@ -36,7 +36,6 @@ type Game struct {
     EstName       string
     OuestId       string
     OuestName     string
-    Cards         map[string]string
     ShuffledCards []string
 }
 var imgColors = map[string]string{

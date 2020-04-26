@@ -1,10 +1,8 @@
 package main
 
 import (
-    "encoding/json"
     "fmt"
     "html/template"
-    "io/ioutil"
     "log"
     "math/rand"
     "net/http"
@@ -96,15 +94,16 @@ func (p *Player) savePlayer() error {
 
 func loadPlayer(id string) (*Player, error) {
     var p Player
-    filename := "p_" + id + ".json"
-    jsonpayload, err := ioutil.ReadFile(filename)
+    v, err := redis.Values(redCon.Do("HGETALL", "p:"+id))
     if err != nil {
+        fmt.Println(err)
         return nil, err
     }
-    err = json.Unmarshal(jsonpayload, &p)
-    if err != nil {
+    if err := redis.ScanStruct(v, &p); err != nil {
+        fmt.Println(err)
         return nil, err
     }
+    fmt.Println(p)
     return &p, nil
 }
 

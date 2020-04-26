@@ -86,12 +86,12 @@ func generateId() string {
 }
 
 func (p *Player) savePlayer() error {
-    filename := "p_" + p.Id + ".json"
-    jsonpayload, err := json.MarshalIndent(p, "", "  ")
-    if err != nil {
+//    fmt.Println(p)
+    if _, err := redCon.Do("HMSET", redis.Args{}.Add("p:"+p.Id).AddFlat(p)...); err != nil {
+        fmt.Println(err)
         return err
     }
-    return ioutil.WriteFile(filename, jsonpayload, 0600)
+    return nil
 }
 
 func loadPlayer(id string) (*Player, error) {

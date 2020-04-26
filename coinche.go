@@ -44,7 +44,7 @@ var imgColors = map[string]string{
     "club"    : "c",
 }
 var baseCards = []string{"K", "Q", "J", "A", "10", "9", "8", "7"}
-var explicitCards = make(map[string]string, 32)
+var refCards = make(map[string]string, 32)
 var simpleCards []string
 
 var (
@@ -56,11 +56,13 @@ var (
 func initCards() {
     for key_color, val_color := range imgColors {
         for _, val_card := range baseCards {
-//            explicitCards[key_color + val_card] = val_color + val_card
-//            simpleCards = append(simpleCards, key_color + val_card)
-            explicitCards[key_color + val_card] = val_card + val_color
+            refCards[key_color + val_card] = val_card + val_color
             simpleCards = append(simpleCards, key_color + val_card)
         }
+    }
+    if _, err := redCon.Do("HMSET", redis.Args{}.Add("refCards").AddFlat(refCards)...); err != nil {
+        fmt.Println(err)
+        return
     }
 }
 
@@ -262,7 +264,7 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
     }
     pNord.DistributedCards = make(map[string]string, 8)
     for _, v := range shuffledCards[:8] {
-        pNord.DistributedCards[v] = g.Cards[v]
+        pNord.DistributedCards[v] = refCards[v]
     }
     err = pNord.savePlayer()
     if err != nil {
@@ -277,7 +279,7 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
     }
     pSud.DistributedCards = make(map[string]string, 8)
     for _, v := range shuffledCards[8:16] {
-        pSud.DistributedCards[v] = g.Cards[v]
+        pSud.DistributedCards[v] = refCards[v]
     }
     err = pSud.savePlayer()
     if err != nil {
@@ -292,7 +294,7 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
     }
     pEst.DistributedCards = make(map[string]string, 8)
     for _, v := range shuffledCards[16:24] {
-        pEst.DistributedCards[v] = g.Cards[v]
+        pEst.DistributedCards[v] = refCards[v]
     }
     err = pEst.savePlayer()
     if err != nil {
@@ -307,7 +309,7 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
     }
     pOuest.DistributedCards = make(map[string]string, 8)
     for _, v := range shuffledCards[24:] {
-        pOuest.DistributedCards[v] = g.Cards[v]
+        pOuest.DistributedCards[v] = refCards[v]
     }
     err = pOuest.savePlayer()
     if err != nil {

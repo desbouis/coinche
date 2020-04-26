@@ -119,15 +119,16 @@ func (g *Game) saveGame() error {
 
 func loadGame(id string) (*Game, error) {
     var g Game
-    filename := "g_" + id + ".json"
-    jsonpayload, err := ioutil.ReadFile(filename)
+    v, err := redis.Values(redCon.Do("HGETALL", "g:"+id))
     if err != nil {
+        fmt.Println(err)
         return nil, err
     }
-    err = json.Unmarshal(jsonpayload, &g)
-    if err != nil {
+    if err := redis.ScanStruct(v, &g); err != nil {
+        fmt.Println(err)
         return nil, err
     }
+    fmt.Println(g)
     return &g, nil
 }
 

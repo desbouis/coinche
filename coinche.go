@@ -12,6 +12,7 @@ import (
     "strings"
     "time"
 
+    "github.com/gomodule/redigo/redis"
     "github.com/google/uuid"
 )
 
@@ -48,6 +49,12 @@ var baseCards = []string{"K", "Q", "J", "A", "10", "9", "8", "7"}
 var explicitCards = make(map[string]string, 32)
 var simpleCards []string
 
+var (
+    redCon redis.Conn
+    err error
+    reply interface{}
+)
+
 func initCards() {
     for key_color, val_color := range imgColors {
         for _, val_card := range baseCards {
@@ -65,6 +72,13 @@ func shuffleCards(c []string) []string {
         c[i], c[j] = c[j], c[i]
     })
     return c
+}
+
+func initRedis() {
+    redCon, err = redis.Dial("tcp", ":6379")
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 func generateId() string {
@@ -369,7 +383,17 @@ func makeHandler(fn func (http.ResponseWriter, *http.Request, string)) http.Hand
 
 func main() {
     fmt.Println("Starting...")
+
+    fmt.Println("initializing Redis connection...")
+    initRedis()
+    redCon.Do("SET", "hello", "coinche!")
+    s, err := redis.String(redCon.Do("GET", "hello"))
+    fmt.Printf("%#v %v\n", s, err)
+    fmt.Println("...Redis connection initialized!")
+
+    fmt.Println("initializing cards...")
     initCards()
+    fmt.Println("...cards initialized!")
 
     fs := http.FileServer(http.Dir("./assets/"))
     http.Handle("/coinche/assets/", http.StripPrefix("/coinche/assets/", fs))

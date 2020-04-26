@@ -38,23 +38,6 @@ type Game struct {
     Cards         map[string]string
     ShuffledCards []string
 }
-/*
-var baseColors = map[string]string{
-    "heart"   : "\U00002665",
-    "spade"   : "\U00002660",
-    "diamond" : "\U00002666",
-    "club"    : "\U00002663",
-}
-*/
-/*
-var imgColors = map[string]string{
-    "heart"   : "<img src=\"/coinche/assets/img/heart.png\" width=\"30\" height=\"30\">",
-    "spade"   : "<img src=\"/coinche/assets/img/spade.png\" width=\"30\" height=\"30\">",
-    "diamond" : "<img src=\"/coinche/assets/img/diamond.png\" width=\"30\" height=\"30\">",
-    "club"    : "<img src=\"/coinche/assets/img/club.png\" width=\"30\" height=\"30\">",
-}
-var baseCards = []string{"R", "D", "V", "A", "10", "9", "8", "7"}
-*/
 var imgColors = map[string]string{
     "heart"   : "h",
     "spade"   : "s",

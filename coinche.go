@@ -1,17 +1,20 @@
 package main
 
 import (
+    "encoding/json"
     "fmt"
     "html/template"
     "log"
     "math/rand"
     "net/http"
     "regexp"
+    "runtime"
     "strings"
     "time"
 
     "github.com/gomodule/redigo/redis"
     "github.com/google/uuid"
+    "github.com/gorilla/websocket"
 )
 
 type Player struct {
@@ -35,6 +38,16 @@ type Game struct {
     OuestName     string
     ShuffledCards []string
 }
+
+// struct to give to the player template
+type ViewPlayerData struct {
+    Player *Player
+    Game   *Game
+}
+
+const gamePrefix   string = "game/"
+const playerPrefix string = "player/"
+
 var imgColors = map[string]string{
     "heart"   : "h",
     "spade"   : "s",
@@ -50,6 +63,44 @@ var (
     err error
     reply interface{}
 )
+
+/*
+ * websocket
+ */
+// connected clients
+// the string will contain the GameId
+var wsClientsRegistry = make(map[*websocket.Conn]string)
+// broadcast channel
+var wsBroadcast = make(chan WsMessage)
+// Configure the upgrader
+var wsUpgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+}
+// Define our message object sent and received in websocket
+type WsMessage struct {
+    GameId        string `json:"game_id"`
+    GameName      string `json:"game_name"`
+    PlayerId      string `json:"player_id"`
+    PlayerName    string `json:"player_name"`
+    PlayerAlias   string `json:"player_alias"`
+    PlayerCard    string `json:"player_card"`
+    PlayerCardSrc string `json:"player_card_src"`
+    Action        string `json:"action_type"`
+    Message       string `json:"message"`
+}
+
+
+
+/* functions */
+
+func trace() {
+    pc := make([]uintptr, 15)
+    n := runtime.Callers(2, pc)
+    frames := runtime.CallersFrames(pc[:n])
+    frame, _ := frames.Next()
+    fmt.Printf("%s:%d %s\n", frame.File, frame.Line, frame.Function)
+}
 
 func initCards() {
     for key_color, val_color := range imgColors {
@@ -84,8 +135,13 @@ func generateId() string {
 }
 
 func (p *Player) savePlayer() error {
-//    fmt.Println(p)
-    if _, err := redCon.Do("HMSET", redis.Args{}.Add("p:"+p.Id).AddFlat(p)...); err != nil {
+    jsonPayload, err := json.Marshal(p)
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    _, err = redCon.Do("SET", playerPrefix+p.Id, jsonPayload)
+    if err != nil {
         fmt.Println(err)
         return err
     }
@@ -94,13 +150,15 @@ func (p *Player) savePlayer() error {
 
 func loadPlayer(id string) (*Player, error) {
     var p Player
-    v, err := redis.Values(redCon.Do("HGETALL", "p:"+id))
-    if err != nil {
+    jsonPayload, err := redis.String(redCon.Do("GET", playerPrefix+id))
+    if err == redis.ErrNil {
+        fmt.Printf("Player %s does not exist", id)
+    } else if err != nil {
         fmt.Println(err)
         return nil, err
     }
-    if err := redis.ScanStruct(v, &p); err != nil {
-        fmt.Println(err)
+    err = json.Unmarshal([]byte(jsonPayload), &p)
+    if err != nil {
         return nil, err
     }
     fmt.Println(p)
@@ -108,8 +166,14 @@ func loadPlayer(id string) (*Player, error) {
 }
 
 func (g *Game) saveGame() error {
-//    fmt.Println(g)
-    if _, err := redCon.Do("HMSET", redis.Args{}.Add("g:"+g.Id).AddFlat(g)...); err != nil {
+    // cf. https://github.com/gilcrest/redigo-example/blob/master/main.go
+    jsonPayload, err := json.Marshal(g)
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    _, err = redCon.Do("SET", gamePrefix+g.Id, jsonPayload)
+    if err != nil {
         fmt.Println(err)
         return err
     }
@@ -118,13 +182,15 @@ func (g *Game) saveGame() error {
 
 func loadGame(id string) (*Game, error) {
     var g Game
-    v, err := redis.Values(redCon.Do("HGETALL", "g:"+id))
-    if err != nil {
+    jsonPayload, err := redis.String(redCon.Do("GET", gamePrefix+id))
+    if err == redis.ErrNil {
+        fmt.Printf("Game %s does not exist", id)
+    } else if err != nil {
         fmt.Println(err)
         return nil, err
     }
-    if err := redis.ScanStruct(v, &g); err != nil {
-        fmt.Println(err)
+    err = json.Unmarshal([]byte(jsonPayload), &g)
+    if err != nil {
         return nil, err
     }
     fmt.Println(g)
@@ -321,12 +387,20 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func playerViewHandler(w http.ResponseWriter, r *http.Request, id string) {
+    // get player data
     p, err := loadPlayer(id)
     if err != nil {
         http.Redirect(w, r, "/coinche/", http.StatusFound)
         return
     }
-    playerRenderTemplate(w, "player/view", p)
+    // get game data
+    g, err := loadGame(p.GameId)
+    if err != nil {
+        http.Redirect(w, r, "/coinche/", http.StatusFound)
+        return
+    }
+    data := &ViewPlayerData{p, g}
+    playerRenderTemplate(w, "player/view", data)
 }
 /*
 var templates = template.Must(template.ParseFiles("templates/index.html",
@@ -355,8 +429,8 @@ func gameRenderTemplate(w http.ResponseWriter, tmpl string, g *Game) {
     }
 }
 
-func playerRenderTemplate(w http.ResponseWriter, tmpl string, p *Player) {
-    err := templates.ExecuteTemplate(w, tmpl, p)
+func playerRenderTemplate(w http.ResponseWriter, tmpl string, data *ViewPlayerData) {
+    err := templates.ExecuteTemplate(w, tmpl, data)
     if err != nil {
         log.Fatalf("Template execution failed!")
         http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
@@ -364,7 +438,7 @@ func playerRenderTemplate(w http.ResponseWriter, tmpl string, p *Player) {
     }
 }
 
-var validUrl = regexp.MustCompile("^/coinche/(game|game/edit|player)/([a-zA-Z0-9]+)$")
+var validUrl = regexp.MustCompile("^/coinche/(game|game/edit|player|ws)/([a-zA-Z0-9]+)$")
 
 func makeHandler(fn func (http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -380,19 +454,69 @@ func makeHandler(fn func (http.ResponseWriter, *http.Request, string)) http.Hand
     }
 }
 
+func wsConnectionsHandler(w http.ResponseWriter, r *http.Request, id string) {
+    wsUpgrader.CheckOrigin = func(r *http.Request) bool {
+        return true
+    }
+    // Upgrade initial GET request to a websocket
+    ws, err := wsUpgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+    // Make sure we close the connection when the function returns
+    defer ws.Close()
+    // Register our new client
+    wsClientsRegistry[ws] = id
+    log.Printf("websocket[game %s]: new client connected and registered!", id)
+    // inifinite loop that continuously waits for a new message to be written to the WebSocket,
+    // unserializes it from JSON to a Message object
+    // and then throws it into the broadcast channel
+    for {
+        var msg WsMessage
+        // Read in a new message as JSON and map it to a WsMessage object
+        err := ws.ReadJSON(&msg)
+        if err != nil {
+            log.Printf("error: %v", err)
+            trace()
+            delete(wsClientsRegistry, ws)
+            break
+        }
+        // Send the newly received message to the wsBroadcast channel
+        log.Printf("Websocket[game %s]: receive and broadcast the message %s", id, msg)
+        wsBroadcast <- msg
+    }
+}
+
+func wsMessagesHandler() {
+    for {
+        // Grab the next message from the broadcast channel
+        msg := <-wsBroadcast
+        // Send it out to every clients that are currently connected at the same game
+        for client, gameId := range wsClientsRegistry {
+            if (gameId == msg.GameId) {
+                log.Printf("Websocket[game %s]: send the message %s to client", gameId, msg)
+                err := client.WriteJSON(msg)
+                if err != nil {
+                    log.Printf("error: %v", err)
+                    trace()
+                    client.Close()
+                    delete(wsClientsRegistry, client)
+                }
+            }
+        }
+    }
+}
+
 func main() {
-    fmt.Println("Starting...")
+    log.Println("Starting Coinche app...")
 
-    fmt.Println("initializing Redis connection...")
+    log.Println("Initializing Redis connection...")
     initRedis()
-    redCon.Do("SET", "hello", "coinche!")
-    s, err := redis.String(redCon.Do("GET", "hello"))
-    fmt.Printf("%#v %v\n", s, err)
-    fmt.Println("...Redis connection initialized!")
+    log.Println("...Redis connection initialized!")
 
-    fmt.Println("initializing cards...")
+    log.Println("Initializing cards...")
     initCards()
-    fmt.Println("...cards initialized!")
+    log.Println("...cards initialized!")
 
     fs := http.FileServer(http.Dir("./assets/"))
     http.Handle("/coinche/assets/", http.StripPrefix("/coinche/assets/", fs))
@@ -403,6 +527,11 @@ func main() {
     http.HandleFunc("/coinche/game/save", gameSaveHandler)
     http.HandleFunc("/coinche/game/distribute", gameDistributeHandler)
     http.HandleFunc("/coinche/player/", makeHandler(playerViewHandler))
+    http.HandleFunc("/coinche/ws/", makeHandler(wsConnectionsHandler))
 
+    // Start listening for incoming websocket messages
+    go wsMessagesHandler()
+
+    log.Println("Starting http server on :8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }

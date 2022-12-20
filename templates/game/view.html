@@ -3,47 +3,73 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Coinche "{{.Name}}"</title>
-<link rel="stylesheet" href="/coinche/assets/css/main.css">
+<title>Partie de Coinche "{{.Name}}"</title>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"  media="screen,projection">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 </head>
 <body>
 
-<h1>Coinche "{{.Name}}"</h1>
+<div class="container">
 
-<p>[<a href="/coinche/game/edit/{{.Id}}">edit</a>]</p>
+<h2 class="flow-text">Partie de Coinche "{{.Name}}"</h2>
 
-<p>
-  <h3>Team Nord-Sud:</h3>
-  <table>
-    <tr>
-      <th>Nord:</th><td><a href="/coinche/player/{{.NordId}}">{{.NordName}}</a></td>
-    </tr>
-    <tr>
-      <th>Sud:</th><td><a href="/coinche/player/{{.SudId}}">{{.SudName}}</a></td>
-    </tr>
-  </table>
-</p>
-<p>
-  <h3>Team Est-Ouest:</h3>
-  <table>
-    <tr>
-      <th>Est:</th><td><a href="/coinche/player/{{.EstId}}">{{.EstName}}</a></td>
-    </tr>
-    <tr>
-      <th>Ouest:</th><td><a href="/coinche/player/{{.OuestId}}">{{.OuestName}}</a></td>
-    </tr>
-  </table>
-</p>
-<p>
-  <form action="/coinche/game/distribute" method="POST">
+<p><a href="/coinche/game/edit/{{.Id}}"><i class="material-icons prefix tiny">edit</i>Modifier</a></p>
+
+<div class="row">
+  <div class="col s12">
+    <h5 class="left-align flow-text">Equipe Nord-Sud :</h5>
+  </div>
+</div>
+
+<div class="row">
+  <div class="input-field col s12 m6 l6">
+    <i class="material-icons left">face</i>
+    Joueur Nord : <a href="/coinche/player/{{.NordId}}">{{.NordName}}</a>
+  </div>
+  <div class="input-field col s12 m6 l6">
+    <i class="material-icons left">face</i>
+    Joueur Sud : <a href="/coinche/player/{{.SudId}}">{{.SudName}}</a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s12">
+    <h5 class="left-align flow-text">Equipe Est-Ouest :</h5>
+  </div>
+</div>
+
+<div class="row">
+  <div class="input-field col s12 m6 l6">
+    <i class="material-icons left">face</i>
+    Joueur Est : <a href="/coinche/player/{{.EstId}}">{{.EstName}}</a>
+  </div>
+  <div class="input-field col s12 m6 l6">
+    <i class="material-icons left">face</i>
+    Joueur Ouest : <a href="/coinche/player/{{.OuestId}}">{{.OuestName}}</a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s12 left-align">
+    <form action="/coinche/game/distribute" method="POST">
     <input type="hidden" name="nordId" value="{{.NordId}}">
     <input type="hidden" name="sudId" value="{{.SudId}}">
     <input type="hidden" name="estId" value="{{.EstId}}">
     <input type="hidden" name="ouestId" value="{{.OuestId}}">
     <input type="hidden" name="gameId" value="{{.Id}}">
-    <input type="submit" value="Distribute...">
-  </form>
-</p>
+    <button type="submit" class="waves-effect waves-light btn"><i class="material-icons right">open_with</i>Distribuer les cartes</button>
+    <!-- games open_with zoom_out_map -->
+    </form>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 </body>
 </html>
 {{end}}

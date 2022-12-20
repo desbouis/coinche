@@ -3,40 +3,152 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Player "{{.Name}}"</title>
-<link rel="stylesheet" href="/coinche/assets/css/main.css">
+<title>Joueur {{.Player.Alias}} "{{.Player.Name}}"</title>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"  media="screen,projection">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- https://github.com/SortableJS/Sortable -->
+<script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
+
+<style>
+.img-card {
+  padding: .25rem;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: .25rem;
+  max-width: 100%;
+  height: auto;
+}
+
+.play-mat {
+  height: 150px;
+}
+</style>
+
 </head>
 <body>
 
-<h1>Player "{{.Name}}"</h1>
-<form action="/coinche/player/{{.Id}}" onsubmit="javascript:location.reload(true)">
-<table>
-  <tr>
-    <th>Alias:</th><td>{{.Alias}}</td>
-  </tr>
-  <tr>
-    <th>Coinche id:</th><td>{{.GameId}}</td>
-  </tr>
-  <tr>
-    <th>Distributed cards:</th>
-<!--
-    <td>
-      {{range $k, $v := .DistributedCards}}
-        <input type="checkbox" id="{{$k}}" name="{{$k}}"><label for="{{$k}}" class="cards">{{noescape $v}}</label>&nbsp;&nbsp;<br>
+<div class="container">
+
+<h2 class="flow-text center-align">Partie de Coinche "{{.Game.Name}}"</h2>
+
+<div class="row valign-wrapper">
+  <div class="col s12 center-align">
+    <i class="material-icons">face</i>
+    {{ if (eq .Player.Alias "Sud") }}
+    {{.Game.NordName}}
+      <div id="displayNordCard"><img id="imgNordCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Ouest") }}
+    {{.Game.EstName}}
+      <div id="displayEstCard"><img id="imgEstCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Nord") }}
+    {{.Game.SudName}}
+      <div id="displaySudCard"><img id="imgSudCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Est") }}
+    {{.Game.OuestName}}
+      <div id="displayOuestCard"><img id="imgOuestCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+  </div>
+</div>
+
+<div class="row valign-wrapper">
+  <div class="col s4 center-align">
+    <i class="material-icons">face</i>
+    {{ if (eq .Player.Alias "Sud") }}
+    {{.Game.OuestName}}
+      <div id="displayOuestCard"><img id="imgOuestCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Ouest") }}
+    {{.Game.NordName}}
+      <div id="displayNordCard"><img id="imgNordCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Nord") }}
+    {{.Game.EstName}}
+      <div id="displayEstCard"><img id="imgEstCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Est") }}
+    {{.Game.SudName}}
+      <div id="displaySudCard"><img id="imgSudCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+  </div>
+  <div class="col s4 center-align">
+    <div class="card-panel teal lighten-2 hoverable play-mat" id="playMat"></div>
+  </div>
+  <div class="col s4 center-align">
+    <i class="material-icons">face</i>
+    {{ if (eq .Player.Alias "Sud") }}
+    {{.Game.EstName}}
+      <div id="displayEstCard"><img id="imgEstCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Ouest") }}
+    {{.Game.SudName}}
+      <div id="displaySudCard"><img id="imgSudCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Nord") }}
+    {{.Game.OuestName}}
+      <div id="displayOuestCard"><img id="imgOuestCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+    {{ if (eq .Player.Alias "Est") }}
+    {{.Game.NordName}}
+      <div id="displayNordCard"><img id="imgNordCard" name="" class="img-card" src="/coinche/assets/img/back.png"></div>
+    {{ end }}
+  </div>
+</div>
+
+<div class="row valign-wrapper">
+  <div class="col s12 center">
+      <div id="myCards">
+      {{range $k, $v := .Player.DistributedCards}}
+        <img src="/coinche/assets/img/en/{{$v}}.png" name="{{$k}}" id="{{$k}}" class="img-card hoverable responsive-img">
       {{end}}
-    </td>
--->
-    <td>
-      {{range $k, $v := .DistributedCards}}
-        <img src="/coinche/assets/img/en/{{$v}}.gif">&nbsp;&nbsp;
-      {{end}}
-    </td>
-  </tr>
-</table>
-<p>
-<input type="submit" value="Get new cards...">
-</p>
-</form>
+      </div>
+      <div><i class="material-icons">face</i>{{.Player.Name}}</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s12 center">
+    <button class="waves-effect waves-light btn" id="card_validation">
+    <i class="material-icons right">chat</i>
+    Miser
+    </button>
+  </div>
+</div>
+<input type="hidden" name="gameId" id="gameId" value="{{.Game.Id}}">
+<input type="hidden" name="gameName" id="gameName" value="{{.Game.Name}}">
+<input type="hidden" name="playerId" id="playerId" value="{{.Player.Id}}">
+<input type="hidden" name="playerName" id="playerName" value="{{.Player.Name}}">
+<input type="hidden" name="playerAlias" id="playerAlias" value="{{.Player.Alias}}">
+
+<div class="row">
+  <div class="col s12 center">
+    <form action="/coinche/player/{{.Player.Id}}" onsubmit="javascript:location.reload(true)">
+    <button type="submit" class="waves-effect waves-light btn"><i class="material-icons right">file_download</i>Récupérer mes cartes</button>
+<!-- sync style refresh file_download -->
+    </form>
+  </div>
+</div>
+
+</div>
+
+<script>
+var sortableMyCards = new Sortable(myCards, {
+  ghostClass: 'green-background-class',
+  group: 'shared', // set both lists to same group
+  animation: 400
+});
+
+var sortablePlayMat = new Sortable(playMat, {
+  group: 'shared',
+  animation: 400
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: coinche
+spec:
+  containers:
+  - name: redis
+    image: "docker.io/redis:6"
+    ports:
+      - containerPort: 6379
+  - name: server
+    image: "localhost/coinche:latest"
+    ports:
+      - containerPort: 8080

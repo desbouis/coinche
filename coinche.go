@@ -402,12 +402,6 @@ func playerViewHandler(w http.ResponseWriter, r *http.Request, id string) {
     data := &ViewPlayerData{p, g}
     playerRenderTemplate(w, "player/view", data)
 }
-/*
-var templates = template.Must(template.ParseFiles("templates/index.html",
-                                                  "templates/game/edit.html",
-                                                  "templates/game/view.html",
-                                                  "templates/player/view.html"))
-*/
 
 func noescape(s string) template.HTML {
     return template.HTML(s)

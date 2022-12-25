@@ -36,8 +36,6 @@ window.addEventListener("load", function(event) {
       var elt_target = old_img.parentNode;
       var new_img = document.createElement("img");
       new_img.id = "img"+message.player_alias+"Card";
-//      new_img.setAttribute("width", old_img.getAttribute("width"));
-//      new_img.setAttribute("height", old_img.getAttribute("height"));
       new_img.className = "img-card";
       if (message.action_type == "PLAY") {
         new_img.src = message.player_card_src;

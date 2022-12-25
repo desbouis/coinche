@@ -10,6 +10,7 @@ import (
     "regexp"
     "runtime"
     "strings"
+    "strconv"
     "time"
 
     "github.com/gomodule/redigo/redis"
@@ -28,6 +29,7 @@ type Player struct {
 type Game struct {
     Id            string
     Name          string
+    DistribNb     string
     NordId        string
     NordName      string
     SudId         string
@@ -81,6 +83,7 @@ var wsUpgrader = websocket.Upgrader{
 type WsMessage struct {
     GameId        string `json:"game_id"`
     GameName      string `json:"game_name"`
+    GameDistribNb string `json:"game_distrib_nb"`
     PlayerId      string `json:"player_id"`
     PlayerName    string `json:"player_name"`
     PlayerAlias   string `json:"player_alias"`
@@ -222,16 +225,17 @@ func gameEditHandler(w http.ResponseWriter, r *http.Request, id string) {
 
 func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     var err error = nil
-    gameId      := r.FormValue("gameId")
-    gameName    := r.FormValue("gameName")
-    nordId      := r.FormValue("nordId")
-    nordName    := r.FormValue("nordName")
-    sudId       := r.FormValue("sudId")
-    sudName     := r.FormValue("sudName")
-    estId       := r.FormValue("estId")
-    estName     := r.FormValue("estName")
-    ouestId     := r.FormValue("ouestId")
-    ouestName   := r.FormValue("ouestName")
+    gameId        := r.FormValue("gameId")
+    gameName      := r.FormValue("gameName")
+    gameDistribNb := r.FormValue("gameDistribNb")
+    nordId        := r.FormValue("nordId")
+    nordName      := r.FormValue("nordName")
+    sudId         := r.FormValue("sudId")
+    sudName       := r.FormValue("sudName")
+    estId         := r.FormValue("estId")
+    estName       := r.FormValue("estName")
+    ouestId       := r.FormValue("ouestId")
+    ouestName     := r.FormValue("ouestName")
     if gameId == "" {
         gameId = generateId()
     }
@@ -249,6 +253,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     }
     g := &Game{Id: gameId,
                Name: gameName,
+               DistribNb: gameDistribNb,
                NordId: nordId,
                NordName: nordName,
                SudId: sudId,
@@ -316,6 +321,13 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
         http.Redirect(w, r, "/coinche/", http.StatusFound)
         return
     }
+    distrib_counter, err := strconv.Atoi(g.DistribNb)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    distrib_counter++
+    g.DistribNb = strconv.Itoa(distrib_counter)
     g.ShuffledCards = shuffledCards
     err = g.saveGame()
     if err != nil {

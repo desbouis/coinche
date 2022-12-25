@@ -338,31 +338,31 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    pSud, err := loadPlayer(sudId)
-    if err != nil {
-        http.Redirect(w, r, "/coinche/", http.StatusFound)
-        return
-    }
-    pSud.DistributedCards = make(map[string]string, 8)
-    for _, v := range shuffledCards[8:16] {
-        pSud.DistributedCards[v] = refCards[v]
-    }
-    err = pSud.savePlayer()
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
     pEst, err := loadPlayer(estId)
     if err != nil {
         http.Redirect(w, r, "/coinche/", http.StatusFound)
         return
     }
     pEst.DistributedCards = make(map[string]string, 8)
-    for _, v := range shuffledCards[16:24] {
+    for _, v := range shuffledCards[8:16] {
         pEst.DistributedCards[v] = refCards[v]
     }
     err = pEst.savePlayer()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    pSud, err := loadPlayer(sudId)
+    if err != nil {
+        http.Redirect(w, r, "/coinche/", http.StatusFound)
+        return
+    }
+    pSud.DistributedCards = make(map[string]string, 8)
+    for _, v := range shuffledCards[16:24] {
+        pSud.DistributedCards[v] = refCards[v]
+    }
+    err = pSud.savePlayer()
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return

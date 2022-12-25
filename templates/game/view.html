@@ -14,7 +14,7 @@
 
 <div class="container">
 
-<h2 class="flow-text">Partie de Coinche "{{.Name}}"</h2>
+<h2 class="flow-text">Partie de Coinche "{{.Name}}" (distribution n°{{.DistribNb}})</h2>
 
 <p><a href="/coinche/game/edit/{{.Id}}"><i class="material-icons prefix tiny">edit</i>Modifier</a></p>
 
@@ -60,6 +60,7 @@
     <input type="hidden" name="estId" value="{{.EstId}}">
     <input type="hidden" name="ouestId" value="{{.OuestId}}">
     <input type="hidden" name="gameId" value="{{.Id}}">
+    <input type="hidden" name="gameDistribNb" value="{{.DistribNb}}">
     <button type="submit" class="waves-effect waves-light btn"><i class="material-icons right">open_with</i>Distribuer les cartes</button>
     <!-- games open_with zoom_out_map -->
     </form>

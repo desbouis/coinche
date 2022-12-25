@@ -32,7 +32,7 @@
 
 <div class="container">
 
-<h2 class="flow-text center-align">Partie de Coinche "{{.Game.Name}}"</h2>
+<h2 class="flow-text center-align">Partie de Coinche "{{.Game.Name}}" (distribution n°{{.Game.DistribNb}})</h2>
 
 <div class="row valign-wrapper">
   <div class="col s12 center-align">
@@ -121,6 +121,7 @@
 </div>
 <input type="hidden" name="gameId" id="gameId" value="{{.Game.Id}}">
 <input type="hidden" name="gameName" id="gameName" value="{{.Game.Name}}">
+<input type="hidden" name="gameDistribNb" id="gameDistribNb" value="{{.Game.DistribNb}}">
 <input type="hidden" name="playerId" id="playerId" value="{{.Player.Id}}">
 <input type="hidden" name="playerName" id="playerName" value="{{.Player.Name}}">
 <input type="hidden" name="playerAlias" id="playerAlias" value="{{.Player.Alias}}">

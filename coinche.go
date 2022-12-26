@@ -47,8 +47,9 @@ type ViewPlayerData struct {
     Game   *Game
 }
 
-const gamePrefix   string = "game/"
-const playerPrefix string = "player/"
+const sep          string = "/"
+const gamePrefix   string = "game"+sep
+const playerPrefix string = "player"+sep
 
 var imgColors = map[string]string{
     "heart"   : "h",

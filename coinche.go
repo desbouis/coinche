@@ -429,7 +429,7 @@ var templates = template.Must(template.New("").Funcs(template.FuncMap{
 func gameRenderTemplate(w http.ResponseWriter, tmpl string, g *Game) {
     err := templates.ExecuteTemplate(w, tmpl, g)
     if err != nil {
-        log.Fatalf("Template execution failed!")
+        log.Fatalf("Template execution failed during game rendering! Details: %s", err.Error())
         http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
         return
     }
@@ -438,7 +438,7 @@ func gameRenderTemplate(w http.ResponseWriter, tmpl string, g *Game) {
 func playerRenderTemplate(w http.ResponseWriter, tmpl string, data *ViewPlayerData) {
     err := templates.ExecuteTemplate(w, tmpl, data)
     if err != nil {
-        log.Fatalf("Template execution failed!")
+        log.Fatalf("Template execution failed during player rendering! Details: %s", err.Error())
         http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
         return
     }

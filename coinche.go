@@ -98,7 +98,7 @@ type WsMessage struct {
     PlayerCard    string `json:"player_card"`
     PlayerCardSrc string `json:"player_card_src"`
     CardNb        string `json:"card_nb"`
-    Action        string `json:"action_type"`
+    Action        string `json:"action"`
     Message       string `json:"message"`
 }
 

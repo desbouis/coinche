@@ -22,6 +22,7 @@ type Player struct {
     Id               string
     Name             string
     Alias            string
+    Team             string
     GameId           string
     DistributedCards map[string]string
 }
@@ -56,6 +57,11 @@ const cardPrefix    string = "card"+sep
 var wsAction = map[string]string{
     "play_card"  : "PLAY_CARD",
     "cancel_card": "CANCEL_CARD",
+}
+
+var playerTeam = map[string]string{
+    "nord_sud" : "NordSud",
+    "est_ouest": "EstOuest",
 }
 
 var imgColors = map[string]string{
@@ -331,6 +337,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     pNord  := &Player{Id: nordId,
                       Name: nordName,
                       Alias: "Nord",
+                      Team: playerTeam["nord_sud"],
                       GameId: gameId}
     err = pNord.savePlayer()
     if err != nil {
@@ -340,6 +347,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     pSud   := &Player{Id: sudId,
                       Name: sudName,
                       Alias: "Sud",
+                      Team: playerTeam["nord_sud"],
                       GameId: gameId}
     err = pSud.savePlayer()
     if err != nil {
@@ -349,6 +357,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     pEst   := &Player{Id: estId,
                       Name: estName,
                       Alias: "Est",
+                      Team: playerTeam["est_ouest"],
                       GameId: gameId}
     err = pEst.savePlayer()
     if err != nil {
@@ -358,6 +367,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     pOuest := &Player{Id: ouestId,
                       Name: ouestName,
                       Alias: "Ouest",
+                      Team: playerTeam["est_ouest"],
                       GameId: gameId}
     err = pOuest.savePlayer()
     if err != nil {

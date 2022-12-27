@@ -2,6 +2,7 @@ window.addEventListener("load", function(event) {
 
   var loc = window.location, ws_proto;
   var ws;
+  var card_nb;
 
   if (loc.protocol === "https:") {
     ws_proto = "wss:";
@@ -54,7 +55,8 @@ window.addEventListener("load", function(event) {
       return false;
     }
 
-    var message = document.getElementById("playerName").value+"/"+document.getElementById("playerAlias").value+" a joué la carte " + event.item.name;
+    card_nb = (8 - document.getElementById("myCards").childElementCount).toString();
+    var message = document.getElementById("playerName").value + " a joué " + event.item.name + " comme carte n°" + card_nb;
     console.log("playMat onAdd event: " + message);
 
     var msg = {
@@ -68,6 +70,7 @@ window.addEventListener("load", function(event) {
       player_alias:    document.getElementById("playerAlias").value,
       player_card:     event.item.name,
       player_card_src: event.item.src,
+      card_nb:         card_nb,
     };
 
     ws.send(JSON.stringify(msg));
@@ -82,7 +85,7 @@ window.addEventListener("load", function(event) {
       return false;
     }
 
-    var message = document.getElementById("playerName").value+"/"+document.getElementById("playerAlias").value+" a annulé la carte " + event.item.name;
+    var message = document.getElementById("playerName").value + " a annulé " + event.item.name + " comme carte n°" + card_nb;
     console.log("myCards onAdd event: " + message);
 
     var msg = {
@@ -96,6 +99,7 @@ window.addEventListener("load", function(event) {
       player_alias:    document.getElementById("playerAlias").value,
       player_card:     "",
       player_card_src: "",
+      card_nb:         card_nb,
     };
 
     ws.send(JSON.stringify(msg));

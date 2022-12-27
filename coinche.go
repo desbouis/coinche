@@ -47,9 +47,11 @@ type ViewPlayerData struct {
     Game   *Game
 }
 
-const sep          string = "/"
-const gamePrefix   string = "game"+sep
-const playerPrefix string = "player"+sep
+const sep           string = "/"
+const gamePrefix    string = "game"+sep
+const playerPrefix  string = "player"+sep
+const distribPrefix string = "distrib"+sep
+const cardPrefix    string = "card"+sep
 
 var imgColors = map[string]string{
     "heart"   : "h",
@@ -90,6 +92,7 @@ type WsMessage struct {
     PlayerAlias   string `json:"player_alias"`
     PlayerCard    string `json:"player_card"`
     PlayerCardSrc string `json:"player_card_src"`
+    CardNb        string `json:"card_nb"`
     Action        string `json:"action_type"`
     Message       string `json:"message"`
 }
@@ -199,6 +202,58 @@ func loadGame(id string) (*Game, error) {
     }
     fmt.Println(g)
     return &g, nil
+}
+
+func loadPlayedCard(k string) (*WsMessage, error) {
+    var playedCard WsMessage
+    jsonPayload, err := redis.String(redCon.Do("GET", k))
+    if err == redis.ErrNil {
+        fmt.Printf("Key %s does not exist", k)
+        return &playedCard, nil
+    } else if err != nil {
+        fmt.Println(err)
+        return nil, err
+    }
+    err = json.Unmarshal([]byte(jsonPayload), &playedCard)
+    if err != nil {
+        return nil, err
+    }
+    fmt.Println(playedCard)
+    return &playedCard, nil
+}
+
+func (m *WsMessage) savePlayedCard() error {
+    // For simplicity, we save the full websocket message as it contains the played card
+    key := gamePrefix+m.GameId+sep+distribPrefix+m.GameDistribNb+sep+playerPrefix+m.PlayerAlias+sep+cardPrefix+m.CardNb
+    if m.Action == "PLAY" {
+        // save the played card
+        jsonPayload, err := json.Marshal(m)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        _, err = redCon.Do("SET", key, jsonPayload)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        log.Printf("Played card %s is saved! (it contains %v)", key, m)
+    }
+    if m.Action == "CANCEL" {
+        // read the last saved played card
+        playedCard, err := loadPlayedCard(key)
+        if err != nil {
+            fmt.Println(err)
+        }
+        // remove the last saved played card
+        _, err = redCon.Do("DEL", key)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        log.Printf("Played card %s is removed! (it contained %v)", key, playedCard)
+    }
+    return nil
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -498,6 +553,17 @@ func wsMessagesHandler() {
     for {
         // Grab the next message from the broadcast channel
         msg := <-wsBroadcast
+        // Read player information
+        player_info, err := loadPlayer(msg.PlayerId)
+        if err != nil {
+            fmt.Println(err)
+        }
+        log.Printf("Player information: %v", player_info)
+        // Save the card played by the player
+        err = msg.savePlayedCard()
+        if err != nil {
+            fmt.Println(err)
+        }
         // Send it out to every clients that are currently connected at the same game
         for client, gameId := range wsClientsRegistry {
             if (gameId == msg.GameId) {

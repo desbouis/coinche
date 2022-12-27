@@ -54,8 +54,8 @@ const distribPrefix string = "distrib"+sep
 const cardPrefix    string = "card"+sep
 
 var wsAction = map[string]string{
-    "play_card"  : "PLAY",
-    "cancel_card": "CANCEL",
+    "play_card"  : "PLAY_CARD",
+    "cancel_card": "CANCEL_CARD",
 }
 
 var imgColors = map[string]string{

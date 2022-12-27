@@ -4,8 +4,8 @@ window.addEventListener("load", function(event) {
   var ws;
   var card_nb;
   var ws_action = {
-    play_card: "PLAY",
-    cancel_card: "CANCEL",
+    play_card: "PLAY_CARD",
+    cancel_card: "CANCEL_CARD",
   };
 
   if (loc.protocol === "https:") {

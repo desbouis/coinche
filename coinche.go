@@ -53,6 +53,11 @@ const playerPrefix  string = "player"+sep
 const distribPrefix string = "distrib"+sep
 const cardPrefix    string = "card"+sep
 
+var wsAction = map[string]string{
+    "play_card"  : "PLAY",
+    "cancel_card": "CANCEL",
+}
+
 var imgColors = map[string]string{
     "heart"   : "h",
     "spade"   : "s",
@@ -225,7 +230,7 @@ func loadPlayedCard(k string) (*WsMessage, error) {
 func (m *WsMessage) savePlayedCard() error {
     // For simplicity, we save the full websocket message as it contains the played card
     key := gamePrefix+m.GameId+sep+distribPrefix+m.GameDistribNb+sep+playerPrefix+m.PlayerAlias+sep+cardPrefix+m.CardNb
-    if m.Action == "PLAY" {
+    if m.Action == wsAction["play_card"] {
         // save the played card
         jsonPayload, err := json.Marshal(m)
         if err != nil {
@@ -239,7 +244,7 @@ func (m *WsMessage) savePlayedCard() error {
         }
         log.Printf("Played card %s is saved! (it contains %v)", key, m)
     }
-    if m.Action == "CANCEL" {
+    if m.Action == wsAction["cancel_card"] {
         // read the last saved played card
         playedCard, err := loadPlayedCard(key)
         if err != nil {

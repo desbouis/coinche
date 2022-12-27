@@ -42,7 +42,7 @@ window.addEventListener("load", function(event) {
       var new_img = document.createElement("img");
       new_img.id = "img"+message.player_alias+"Card";
       new_img.className = "img-card";
-      if (message.action_type == ws_action.play_card) {
+      if (message.action == ws_action.play_card) {
         new_img.src = message.player_card_src;
         new_img.name = message.player_alias+"-"+message.player_card;
       } else {
@@ -64,7 +64,7 @@ window.addEventListener("load", function(event) {
     console.log("playMat onAdd event: " + message);
 
     var msg = {
-      action_type:     ws_action.play_card,
+      action:          ws_action.play_card,
       message:         message,
       game_id:         document.getElementById("gameId").value,
       game_name:       document.getElementById("gameName").value,
@@ -93,7 +93,7 @@ window.addEventListener("load", function(event) {
     console.log("myCards onAdd event: " + message);
 
     var msg = {
-      action_type:     ws_action.cancel_card,
+      action:          ws_action.cancel_card,
       message:         message,
       game_id:         document.getElementById("gameId").value,
       game_name:       document.getElementById("gameName").value,

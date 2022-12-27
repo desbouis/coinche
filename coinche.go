@@ -59,6 +59,13 @@ var wsAction = map[string]string{
     "cancel_card": "CANCEL_CARD",
 }
 
+var playerAlias = map[string]string{
+    "nord" : "Nord",
+    "sud"  : "Sud",
+    "est"  : "Est",
+    "ouest": "Ouest",
+}
+
 var playerTeam = map[string]string{
     "nord_sud" : "NordSud",
     "est_ouest": "EstOuest",
@@ -336,7 +343,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     }
     pNord  := &Player{Id: nordId,
                       Name: nordName,
-                      Alias: "Nord",
+                      Alias: playerAlias["nord"],
                       Team: playerTeam["nord_sud"],
                       GameId: gameId}
     err = pNord.savePlayer()
@@ -346,7 +353,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     }
     pSud   := &Player{Id: sudId,
                       Name: sudName,
-                      Alias: "Sud",
+                      Alias: playerAlias["sud"],
                       Team: playerTeam["nord_sud"],
                       GameId: gameId}
     err = pSud.savePlayer()
@@ -356,7 +363,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     }
     pEst   := &Player{Id: estId,
                       Name: estName,
-                      Alias: "Est",
+                      Alias: playerAlias["est"],
                       Team: playerTeam["est_ouest"],
                       GameId: gameId}
     err = pEst.savePlayer()
@@ -366,7 +373,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     }
     pOuest := &Player{Id: ouestId,
                       Name: ouestName,
-                      Alias: "Ouest",
+                      Alias: playerAlias["ouest"],
                       Team: playerTeam["est_ouest"],
                       GameId: gameId}
     err = pOuest.savePlayer()

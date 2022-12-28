@@ -8,6 +8,7 @@ window.addEventListener("load", function(event) {
     cancel_card: "CANCEL_CARD",
     pickup_cards: "PICKUP_CARDS"
   };
+  var players_alias = ["Nord", "Est", "Sud", "Ouest"];
 
   if (loc.protocol === "https:") {
     ws_proto = "wss:";
@@ -37,6 +38,7 @@ window.addEventListener("load", function(event) {
   };
 
   var displayPlayerCard = function(message) {
+    // play or cancel a card
     if (document.getElementById("img"+message.player_alias+"Card")) {
       var old_img = document.getElementById("img"+message.player_alias+"Card");
       var elt_target = old_img.parentNode;
@@ -52,6 +54,20 @@ window.addEventListener("load", function(event) {
         new_img.src = "/coinche/assets/img/back.png";
         new_img.name = "";
         elt_target.replaceChild(new_img, old_img);
+      }
+    }
+    // clean playmat and players cards when pickup cards
+    if (message.action == ws_action.pickup_cards) {
+      let elt_playmat = document.getElementById("playMat");
+      while (elt_playmat.firstChild) {
+        elt_playmat.removeChild(elt_playmat.firstChild);
+      }
+      for (let i =0; i < players_alias.length; i++) {
+        let img = document.getElementById("img"+players_alias[i]+"Card");
+        if (img) {
+          img.src = "/coinche/assets/img/back.png";
+          img.name = "";
+        }
       }
     }
   };

@@ -46,11 +46,13 @@ window.addEventListener("load", function(event) {
       if (message.action == ws_action.play_card) {
         new_img.src = message.player_card_src;
         new_img.name = message.player_alias+"-"+message.player_card;
-      } else {
+        elt_target.replaceChild(new_img, old_img);
+      }
+      if (message.action == ws_action.cancel_card) {
         new_img.src = "/coinche/assets/img/back.png";
         new_img.name = "";
+        elt_target.replaceChild(new_img, old_img);
       }
-      elt_target.replaceChild(new_img, old_img);
     }
   };
 

@@ -113,10 +113,11 @@
 
 <div class="row">
   <div class="col s12 center">
-    <button class="waves-effect waves-light btn" id="card_validation">
-    <i class="material-icons right">chat</i>
-    Miser
+    <button class="waves-effect waves-light btn" id="getPlayedCards" name="{{.Player.Team}}" onClick="pickupPlayedCards()">
+    <i class="material-icons right">add_task</i>
+    Ramasser le jeu pour l'équipe {{.Player.Team}}
     </button>
+<!-- style shopping_cart_checkout done_all celebration -->
   </div>
 </div>
 <input type="hidden" name="gameId" id="gameId" value="{{.Game.Id}}">

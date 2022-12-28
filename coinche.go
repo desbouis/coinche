@@ -51,12 +51,14 @@ type ViewPlayerData struct {
 const sep           string = "/"
 const gamePrefix    string = "game"+sep
 const playerPrefix  string = "player"+sep
+const teamPrefix    string = "team"+sep
 const distribPrefix string = "distrib"+sep
 const cardPrefix    string = "card"+sep
 
 var wsAction = map[string]string{
-    "play_card"  : "PLAY_CARD",
-    "cancel_card": "CANCEL_CARD",
+    "play_card"   : "PLAY_CARD",
+    "cancel_card" : "CANCEL_CARD",
+    "pickup_cards": "PICKUP_CARDS",
 }
 
 var playerAlias = map[string]string{
@@ -272,6 +274,31 @@ func (m *WsMessage) savePlayedCard() error {
         }
         log.Printf("Played card %s is removed! (it contained %v)", key, playedCard)
     }
+    return nil
+}
+
+func (m *WsMessage) savePickupCards() error {
+    // get the 4 played cards and save them for the team
+    saveKey := gamePrefix+m.GameId+sep+distribPrefix+m.GameDistribNb+sep+teamPrefix+m.PlayerTeam
+    for _, alias := range playerAlias {
+        k := gamePrefix+m.GameId+sep+distribPrefix+m.GameDistribNb+sep+playerPrefix+alias+sep+cardPrefix+m.CardNb
+        playedCard, err := loadPlayedCard(k)
+        if err != nil {
+            fmt.Println(err)
+        }
+        jsonPayload, err := json.Marshal(playedCard)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        _, err = redCon.Do("SADD", saveKey, jsonPayload)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        log.Printf("Card of %s saved! (it contains %v)", alias, playedCard)
+    }
+    log.Printf("Pickup cards are all saved in %s", saveKey)
     return nil
 }
 
@@ -585,6 +612,12 @@ func wsMessagesHandler() {
         // Save the card played by the player
         if msg.Action == wsAction["play_card"] || msg.Action == wsAction["cancel_card"] {
             err = msg.savePlayedCard()
+            if err != nil {
+                fmt.Println(err)
+            }
+        }
+        if msg.Action == wsAction["pickup_cards"] {
+            err = msg.savePickupCards()
             if err != nil {
                 fmt.Println(err)
             }

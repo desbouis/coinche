@@ -583,9 +583,11 @@ func wsMessagesHandler() {
         }
         log.Printf("Player information: %v", player_info)
         // Save the card played by the player
-        err = msg.savePlayedCard()
-        if err != nil {
-            fmt.Println(err)
+        if msg.Action == wsAction["play_card"] || msg.Action == wsAction["cancel_card"] {
+            err = msg.savePlayedCard()
+            if err != nil {
+                fmt.Println(err)
+            }
         }
         // Send it out to every clients that are currently connected at the same game
         for client, gameId := range wsClientsRegistry {

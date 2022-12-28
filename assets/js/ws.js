@@ -6,6 +6,7 @@ window.addEventListener("load", function(event) {
   var ws_action = {
     play_card: "PLAY_CARD",
     cancel_card: "CANCEL_CARD",
+    pickup_cards: "PICKUP_CARDS"
   };
 
   if (loc.protocol === "https:") {
@@ -95,6 +96,36 @@ window.addEventListener("load", function(event) {
 
     var msg = {
       action:          ws_action.cancel_card,
+      message:         message,
+      game_id:         document.getElementById("gameId").value,
+      game_name:       document.getElementById("gameName").value,
+      game_distrib_nb: document.getElementById("gameDistribNb").value,
+      player_id:       document.getElementById("playerId").value,
+      player_name:     document.getElementById("playerName").value,
+      player_alias:    document.getElementById("playerAlias").value,
+      player_team:     document.getElementById("playerTeam").value,
+      player_card:     "",
+      player_card_src: "",
+      card_nb:         card_nb,
+    };
+
+    ws.send(JSON.stringify(msg));
+    console.log("WEBSOCKET MESSAGE SENT: " + JSON.stringify(msg));
+
+    return false;
+  };
+
+  // when wining player picks up all played cards
+  pickupPlayedCards = function() {
+    if (!ws) {
+      return false;
+    }
+
+    var message = document.getElementById("playerName").value + " a ramassé les cartes jouées pour l'équipe " + document.getElementById("playerTeam").value;
+    console.log("pickupPlayedCards onClick event: " + message);
+
+    var msg = {
+      action:          ws_action.pickup_cards,
       message:         message,
       game_id:         document.getElementById("gameId").value,
       game_name:       document.getElementById("gameName").value,

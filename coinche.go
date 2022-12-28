@@ -108,6 +108,7 @@ type WsMessage struct {
     PlayerId      string `json:"player_id"`
     PlayerName    string `json:"player_name"`
     PlayerAlias   string `json:"player_alias"`
+    PlayerTeam    string `json:"player_team"`
     PlayerCard    string `json:"player_card"`
     PlayerCardSrc string `json:"player_card_src"`
     CardNb        string `json:"card_nb"`

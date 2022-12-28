@@ -9,8 +9,8 @@ import (
     "net/http"
     "regexp"
     "runtime"
-    "strings"
     "strconv"
+    "strings"
     "time"
 
     "github.com/gomodule/redigo/redis"
@@ -302,6 +302,52 @@ func (m *WsMessage) savePickupCards() error {
     return nil
 }
 
+func distributeCards(gameId string, playerIds[4]string) error {
+    shuffledCards := shuffleCards(simpleCards)
+
+    g, err := loadGame(gameId)
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    distrib_counter, err := strconv.Atoi(g.DistribNb)
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    distrib_counter++
+    g.DistribNb = strconv.Itoa(distrib_counter)
+    g.ShuffledCards = shuffledCards
+    err = g.saveGame()
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+
+    min := 0
+    max := 8
+    for _, player_id := range playerIds {
+        p, err := loadPlayer(player_id)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        p.DistributedCards = make(map[string]string, 8)
+        for _, v := range shuffledCards[min:max] {
+            p.DistributedCards[v] = refCards[v]
+        }
+        err = p.savePlayer()
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+        min += 8
+        max += 8
+    }
+
+    return nil
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
     g := &Game{}
     gameRenderTemplate(w, "index", g)
@@ -410,6 +456,13 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // distribute cards to players
+    err = distributeCards(gameId, [4]string{nordId, estId, sudId, ouestId})
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
     http.Redirect(w, r, "/coinche/game/"+gameId, http.StatusFound)
 }
 
@@ -420,82 +473,7 @@ func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
     estId       := r.FormValue("estId")
     ouestId     := r.FormValue("ouestId")
 
-    shuffledCards := shuffleCards(simpleCards)
-
-    g, err := loadGame(gameId)
-    if err != nil {
-        http.Redirect(w, r, "/coinche/", http.StatusFound)
-        return
-    }
-    distrib_counter, err := strconv.Atoi(g.DistribNb)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    distrib_counter++
-    g.DistribNb = strconv.Itoa(distrib_counter)
-    g.ShuffledCards = shuffledCards
-    err = g.saveGame()
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    pNord, err := loadPlayer(nordId)
-    if err != nil {
-        http.Redirect(w, r, "/coinche/", http.StatusFound)
-        return
-    }
-    pNord.DistributedCards = make(map[string]string, 8)
-    for _, v := range shuffledCards[:8] {
-        pNord.DistributedCards[v] = refCards[v]
-    }
-    err = pNord.savePlayer()
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    pEst, err := loadPlayer(estId)
-    if err != nil {
-        http.Redirect(w, r, "/coinche/", http.StatusFound)
-        return
-    }
-    pEst.DistributedCards = make(map[string]string, 8)
-    for _, v := range shuffledCards[8:16] {
-        pEst.DistributedCards[v] = refCards[v]
-    }
-    err = pEst.savePlayer()
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    pSud, err := loadPlayer(sudId)
-    if err != nil {
-        http.Redirect(w, r, "/coinche/", http.StatusFound)
-        return
-    }
-    pSud.DistributedCards = make(map[string]string, 8)
-    for _, v := range shuffledCards[16:24] {
-        pSud.DistributedCards[v] = refCards[v]
-    }
-    err = pSud.savePlayer()
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    pOuest, err := loadPlayer(ouestId)
-    if err != nil {
-        http.Redirect(w, r, "/coinche/", http.StatusFound)
-        return
-    }
-    pOuest.DistributedCards = make(map[string]string, 8)
-    for _, v := range shuffledCards[24:] {
-        pOuest.DistributedCards[v] = refCards[v]
-    }
-    err = pOuest.savePlayer()
+    err = distributeCards(gameId, [4]string{nordId, estId, sudId, ouestId})
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return

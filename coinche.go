@@ -39,6 +39,7 @@ type Game struct {
     EstName       string
     OuestId       string
     OuestName     string
+    PlayerIds     [4]string
     ShuffledCards []string
 }
 
@@ -399,6 +400,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     if ouestId == "" {
         ouestId = generateId()
     }
+    playerIds := [4]string{nordId, estId, sudId, ouestId}
     g := &Game{Id: gameId,
                Name: gameName,
                DistribNb: gameDistribNb,
@@ -409,7 +411,8 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
                EstId: estId,
                EstName: estName,
                OuestId: ouestId,
-               OuestName: ouestName}
+               OuestName: ouestName,
+               PlayerIds: playerIds}
     err = g.saveGame()
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -303,7 +303,7 @@ func (m *WsMessage) savePickupCards() error {
     return nil
 }
 
-func distributeCards(gameId string, playerIds[4]string) error {
+func distributeCards(gameId string) error {
     shuffledCards := shuffleCards(simpleCards)
 
     g, err := loadGame(gameId)
@@ -327,7 +327,7 @@ func distributeCards(gameId string, playerIds[4]string) error {
 
     min := 0
     max := 8
-    for _, player_id := range playerIds {
+    for _, player_id := range g.PlayerIds {
         p, err := loadPlayer(player_id)
         if err != nil {
             fmt.Println(err)
@@ -460,7 +460,7 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     // distribute cards to players
-    err = distributeCards(gameId, [4]string{nordId, estId, sudId, ouestId})
+    err = distributeCards(gameId)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -471,12 +471,8 @@ func gameSaveHandler(w http.ResponseWriter, r *http.Request) {
 
 func gameDistributeHandler(w http.ResponseWriter, r *http.Request) {
     gameId      := r.FormValue("gameId")
-    nordId      := r.FormValue("nordId")
-    sudId       := r.FormValue("sudId")
-    estId       := r.FormValue("estId")
-    ouestId     := r.FormValue("ouestId")
 
-    err = distributeCards(gameId, [4]string{nordId, estId, sudId, ouestId})
+    err = distributeCards(gameId)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return

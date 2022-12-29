@@ -300,6 +300,16 @@ func (m *WsMessage) savePickupCards() error {
         log.Printf("Card of %s saved! (it contains %v)", alias, playedCard)
     }
     log.Printf("Pickup cards are all saved in %s", saveKey)
+
+    // automatically distribute cards after pickup the last cards
+    if m.CardNb == "8" {
+        err = distributeCards(m.GameId)
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+    }
+
     return nil
 }
 
